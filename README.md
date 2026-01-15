@@ -98,6 +98,70 @@ docker compose run --rm k6 run /scripts/comparison.js
 | Cache Miss | 100 | 100 |
 | Singleflight Shared | 0 | ~99 |
 
+## 実験手順（デモ用）
+
+### 準備
+
+```bash
+# 環境起動
+docker compose up -d
+
+# 起動確認
+curl http://localhost:8080/health
+```
+
+### 実験1: Singleflight無し（Cache Stampede発生）
+
+```bash
+# 負荷テスト実行（100同時リクエスト）
+docker compose run --rm k6 run /scripts/without-singleflight.js
+
+# メトリクス確認
+curl -s http://localhost:8080/metrics | grep db_calls_total
+```
+
+**結果例:**
+```
+db_calls_total{endpoint="without_singleflight"} 100
+```
+→ 100リクエストに対して100回DBアクセスが発生
+
+### 実験2: Singleflight有り（リクエスト集約）
+
+```bash
+# 負荷テスト実行（100同時リクエスト）
+docker compose run --rm k6 run /scripts/with-singleflight.js
+
+# メトリクス確認
+curl -s http://localhost:8080/metrics | grep -E "(db_calls_total|singleflight_shared)"
+```
+
+**結果例:**
+```
+db_calls_total{endpoint="with_singleflight"} 2
+singleflight_shared_total 99
+```
+→ 100リクエストに対してDBアクセスは2回のみ、99リクエストが結果を共有
+
+### 実験3: 比較テスト（連続実行）
+
+Grafanaダッシュボードを開いた状態で実行すると、リアルタイムで差が見える。
+
+```bash
+# 比較テスト実行（Phase1: without → Phase2: with）
+docker compose run --rm k6 run /scripts/comparison.js
+```
+
+**Grafanaで確認するポイント:**
+- Phase1（0-30秒）: DB Calls Rateが高い
+- Phase2（35-65秒）: DB Calls Rateが低い、Singleflight Sharedが増加
+
+### メトリクスリセット（再実験時）
+
+```bash
+docker compose down && docker compose up -d
+```
+
 ## 停止
 
 ```bash
