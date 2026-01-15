@@ -10,7 +10,7 @@ export const options = {
     singleflight_protection: {
       executor: 'shared-iterations',
       vus: 100,           // 100 concurrent users
-      iterations: 100,    // Total 100 requests
+      iterations: 1000,   // Total 1000 requests
       maxDuration: '30s',
       startTime: '0s',
     },
@@ -35,5 +35,5 @@ export default function () {
 
 export function teardown(data) {
   console.log('Test completed: with-singleflight');
-  console.log('Check Grafana dashboard - DB calls should be ~1 instead of ~100');
+  console.log('Check Grafana dashboard - DB calls should be ~1 instead of ~1000');
 }

@@ -10,7 +10,7 @@ export const options = {
     cache_stampede: {
       executor: 'shared-iterations',
       vus: 100,           // 100 concurrent users
-      iterations: 100,    // Total 100 requests
+      iterations: 1000,   // Total 1000 requests
       maxDuration: '30s',
       startTime: '0s',
     },

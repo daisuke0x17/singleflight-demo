@@ -90,13 +90,13 @@ docker compose run --rm k6 run /scripts/comparison.js
 
 ## 期待される結果
 
-100同時リクエストでキャッシュクリア直後の場合:
+1000リクエストでキャッシュクリア直後の場合:
 
 | メトリクス | Without Singleflight | With Singleflight |
 |-----------|---------------------|-------------------|
-| DB Calls | ~100 | ~1 |
-| Cache Miss | 100 | 100 |
-| Singleflight Shared | 0 | ~99 |
+| DB Calls | ~1000 | ~1 |
+| Cache Miss | 1000 | 1000 |
+| Singleflight Shared | 0 | ~999 |
 
 ## 実験手順（デモ用）
 
@@ -113,7 +113,7 @@ curl http://localhost:8080/health
 ### 実験1: Singleflight無し（Cache Stampede発生）
 
 ```bash
-# 負荷テスト実行（100同時リクエスト）
+# 負荷テスト実行（1000リクエスト）
 docker compose run --rm k6 run /scripts/without-singleflight.js
 
 # メトリクス確認
@@ -122,14 +122,14 @@ curl -s http://localhost:8080/metrics | grep db_calls_total
 
 **結果例:**
 ```
-db_calls_total{endpoint="without_singleflight"} 100
+db_calls_total{endpoint="without_singleflight"} 1000
 ```
-→ 100リクエストに対して100回DBアクセスが発生
+→ 1000リクエストに対して1000回DBアクセスが発生
 
 ### 実験2: Singleflight有り（リクエスト集約）
 
 ```bash
-# 負荷テスト実行（100同時リクエスト）
+# 負荷テスト実行（1000リクエスト）
 docker compose run --rm k6 run /scripts/with-singleflight.js
 
 # メトリクス確認
@@ -139,9 +139,9 @@ curl -s http://localhost:8080/metrics | grep -E "(db_calls_total|singleflight_sh
 **結果例:**
 ```
 db_calls_total{endpoint="with_singleflight"} 2
-singleflight_shared_total 99
+singleflight_shared_total 999
 ```
-→ 100リクエストに対してDBアクセスは2回のみ、99リクエストが結果を共有
+→ 1000リクエストに対してDBアクセスは数回のみ、999リクエストが結果を共有
 
 ### 実験3: 比較テスト（連続実行）
 
