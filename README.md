@@ -20,17 +20,11 @@ Cache Stampede（Thundering Herd）問題と、`singleflight` パターンによ
 
 ## アーキテクチャ
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│     k6      │────▶│   Go API    │────▶│    Redis    │
-│  (負荷生成)  │     │   Server    │     │   (Cache)   │
-└─────────────┘     └──────┬──────┘     └─────────────┘
-                           │
-                           ▼
-                   ┌─────────────┐
-                   │  Prometheus │
-                   │  + Grafana  │
-                   └─────────────┘
+```mermaid
+graph LR
+    k6[k6<br/>負荷生成] --> API[Go API Server]
+    API --> Redis[Redis<br/>Cache]
+    API --> Prom[Prometheus<br/>+ Grafana]
 ```
 
 ## クイックスタート
