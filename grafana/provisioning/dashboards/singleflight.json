@@ -122,14 +122,14 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "rate(db_calls_total[30s])",
+          "expr": "increase(db_calls_total[1m])",
           "instant": false,
           "legendFormat": "{{endpoint}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "DB Calls Rate (per second)",
+      "title": "DB Calls",
       "type": "timeseries"
     },
     {
@@ -214,14 +214,14 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "rate(singleflight_shared_total[30s])",
+          "expr": "increase(singleflight_shared_total[1m])",
           "instant": false,
           "legendFormat": "Singleflight Shared",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Singleflight Shared Rate",
+      "title": "Singleflight Shared",
       "type": "timeseries"
     },
     {
@@ -337,14 +337,14 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "rate(cache_misses_total[30s])",
+          "expr": "increase(cache_misses_total[1m])",
           "instant": false,
           "legendFormat": "{{endpoint}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Cache Misses Rate",
+      "title": "Cache Misses",
       "type": "timeseries"
     },
     {
@@ -460,14 +460,14 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "rate(cache_hits_total[30s])",
+          "expr": "increase(cache_hits_total[1m])",
           "instant": false,
           "legendFormat": "{{endpoint}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Cache Hits Rate",
+      "title": "Cache Hits",
       "type": "timeseries"
     },
     {
@@ -907,7 +907,7 @@
     "list": []
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1m",
     "to": "now"
   },
   "timepicker": {},
