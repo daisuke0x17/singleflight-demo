@@ -6,13 +6,12 @@ import { check, sleep } from 'k6';
 
 export const options = {
   scenarios: {
-    // Scenario 1: Clear cache and send burst of requests
+    // 1000 VUsが同時に1リクエストずつ送信 = 一斉スパイク
     singleflight_protection: {
-      executor: 'shared-iterations',
-      vus: 100,           // 100 concurrent users
-      iterations: 1000,   // Total 1000 requests
+      executor: 'per-vu-iterations',
+      vus: 1000,          // 1000 concurrent users
+      iterations: 1,      // Each VU sends 1 request
       maxDuration: '30s',
-      startTime: '0s',
     },
   },
 };

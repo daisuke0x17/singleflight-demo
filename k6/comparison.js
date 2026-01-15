@@ -6,69 +6,55 @@ import { check, sleep } from 'k6';
 
 export const options = {
   scenarios: {
-    // Phase 1: Test without singleflight
+    // Phase 1: 1000 VUs一斉スパイク（singleflight無し）
     without_sf: {
-      executor: 'ramping-vus',
-      startVUs: 0,
-      stages: [
-        { duration: '5s', target: 50 },   // Ramp up
-        { duration: '20s', target: 50 },  // Stay at 50 VUs
-        { duration: '5s', target: 0 },    // Ramp down
-      ],
+      executor: 'per-vu-iterations',
+      vus: 1000,
+      iterations: 1,
+      maxDuration: '30s',
       exec: 'testWithoutSingleflight',
       startTime: '0s',
     },
-    // Phase 2: Test with singleflight (starts after phase 1)
+    // Phase 2: 1000 VUs一斉スパイク（singleflight有り）
     with_sf: {
-      executor: 'ramping-vus',
-      startVUs: 0,
-      stages: [
-        { duration: '5s', target: 50 },   // Ramp up
-        { duration: '20s', target: 50 },  // Stay at 50 VUs
-        { duration: '5s', target: 0 },    // Ramp down
-      ],
+      executor: 'per-vu-iterations',
+      vus: 1000,
+      iterations: 1,
+      maxDuration: '30s',
       exec: 'testWithSingleflight',
-      startTime: '35s',
+      startTime: '10s',
     },
   },
 };
 
 export function setup() {
+  // 両フェーズ前にキャッシュクリア
+  http.get('http://app:8080/api/clear-cache');
   console.log('='.repeat(60));
   console.log('Singleflight Comparison Test');
   console.log('='.repeat(60));
-  console.log('Phase 1 (0-30s): WITHOUT singleflight - watch DB calls spike');
-  console.log('Phase 2 (35-65s): WITH singleflight - watch DB calls stay low');
+  console.log('Phase 1 (0s):  1000 VUs一斉スパイク WITHOUT singleflight');
+  console.log('Phase 2 (10s): 1000 VUs一斉スパイク WITH singleflight');
   console.log('='.repeat(60));
   return {};
 }
 
 export function testWithoutSingleflight() {
-  // Clear cache periodically to trigger stampede
-  if (__ITER % 50 === 0) {
-    http.get('http://app:8080/api/clear-cache');
-  }
-
   const res = http.get('http://app:8080/api/without-singleflight');
   check(res, {
     'without-sf: status 200': (r) => r.status === 200,
   });
-
-  sleep(0.1);
 }
 
 export function testWithSingleflight() {
-  // Clear cache periodically to trigger (protected) stampede
-  if (__ITER % 50 === 0) {
+  // Phase 2開始前にキャッシュクリア（最初のVUのみ）
+  if (__VU === 1) {
     http.get('http://app:8080/api/clear-cache');
   }
-
   const res = http.get('http://app:8080/api/with-singleflight');
   check(res, {
     'with-sf: status 200': (r) => r.status === 200,
   });
-
-  sleep(0.1);
 }
 
 export function teardown(data) {
